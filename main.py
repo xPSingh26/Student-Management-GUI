@@ -1,6 +1,6 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidget, QTableWidgetItem, \
-    QDialog, QVBoxLayout, QLineEdit, QComboBox, QPushButton
-from  PyQt6.QtGui import QAction
+    QDialog, QVBoxLayout, QLineEdit, QComboBox, QPushButton, QToolBar
+from  PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt
 import sys
 import sqlite3
@@ -10,25 +10,35 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Student Management System")
+        self.setMinimumSize(600, 400)
 
+        # Create menu bar
         fileMenu = self.menuBar().addMenu("&File")
         helpMenu = self.menuBar().addMenu("&Help")
         editMenu = self.menuBar().addMenu("&Edit")
-        fileMenuAction = QAction("Add Student", self)
+        fileMenuAction = QAction(QIcon("icons/add.png"), "Add Student", self)
         fileMenuAction.triggered.connect(self.insert_dialog)
         fileMenu.addAction(fileMenuAction)
         helpMenuAction = QAction("About", self)
         helpMenu.addAction(helpMenuAction)
-        editMenuAction = QAction("Search", self)
+        editMenuAction = QAction(QIcon("icons/search.png"), "Search", self)
         editMenuAction.triggered.connect(self.search_dialog)
         editMenu.addAction(editMenuAction)
 
+        # create tool bar
+        toolbar = QToolBar()
+        toolbar.setMovable(True)
+        self.addToolBar(toolbar)
+        toolbar.addAction(fileMenuAction)
+        toolbar.addAction(editMenuAction)
+
+        # create table
         self.table = QTableWidget()
         self.table.setColumnCount(4)
         self.table.setHorizontalHeaderLabels(("id", "name", "course", "mobile"))
         self.table.verticalHeader().setVisible(False)
         self.setCentralWidget(self.table)
-        self.load_data()
+        self.load_data()  # load the table contents from database
 
     def load_data(self):
         """load the database into window table"""
