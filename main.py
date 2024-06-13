@@ -129,6 +129,11 @@ class InsertDialog(QDialog):
         connection.commit()
         connection.close()
         appWindow.load_data()
+        self.close()
+        confirmation = QMessageBox()
+        confirmation.setWindowTitle("Success!")
+        confirmation.setText("The record was added successfully!")
+        confirmation.exec()
 
 
 class SearchDialog(QDialog):
@@ -161,6 +166,7 @@ class SearchDialog(QDialog):
 
         cursor.close()
         connection.close()
+        self.close()
 
 
 class EditDialog(QDialog):
@@ -211,6 +217,11 @@ class EditDialog(QDialog):
         cursor.close()
         connection.close()
         appWindow.load_data()
+        self.close()
+        confirmation = QMessageBox()
+        confirmation.setWindowTitle("Success!")
+        confirmation.setText("The record was edited successfully!")
+        confirmation.exec()
 
 
 class DeleteDialog(QDialog):
