@@ -164,7 +164,53 @@ class SearchDialog(QDialog):
 
 
 class EditDialog(QDialog):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Update Student Data")
+        self.setFixedWidth(300)
+        self.setFixedHeight(300)
+        layout = QVBoxLayout()
+
+        # grab the name from the selected row
+        index = appWindow.table.currentRow()
+        name = appWindow.table.item(index, 1).text()
+        self.nameLineEdit = QLineEdit(name)
+        self.nameLineEdit.setPlaceholderText("Name")
+        layout.addWidget(self.nameLineEdit)
+
+        # grab the course name from the selected row
+        courseName = appWindow.table.item(index, 2).text()
+        self.courseBox = QComboBox()
+        courses = ["Astronomy", "Biology", "Math", "Physics"]
+        self.courseBox.addItems(courses)
+        self.courseBox.setCurrentText(courseName)  # set the current item in the list
+        layout.addWidget(self.courseBox)
+
+        # grab the mobile number from the current row
+        mobile = appWindow.table.item(index, 3).text()
+        self.mobileLineEdit = QLineEdit(mobile)
+        self.mobileLineEdit.setPlaceholderText("Mobile")
+        layout.addWidget(self.mobileLineEdit)
+
+        updateButton = QPushButton("Update")
+        updateButton.clicked.connect(self.update)
+        layout.addWidget(updateButton)
+
+        self.setLayout(layout)
+
+        def update(self):
+            """insert row into the database"""
+            pass
+            # name = self.nameLineEdit.text()
+            # course = self.courseBox.currentText()
+            # mobile = int(self.mobileLineEdit.text())
+            # connection = sqlite3.connect("database.db")
+            # cursor = connection.cursor()
+            # cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?, ?, ?)",
+            #                (name, course, mobile))
+            # connection.commit()
+            # connection.close()
+            # appWindow.load_data()
 
 
 class DeleteDialog(QDialog):
