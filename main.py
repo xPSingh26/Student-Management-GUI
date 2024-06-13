@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidget, QTableWidgetItem, \
-    QDialog, QVBoxLayout, QLineEdit, QComboBox, QPushButton, QToolBar
+    QDialog, QVBoxLayout, QLineEdit, QComboBox, QPushButton, QToolBar, QStatusBar
 from  PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt
 import sys
@@ -40,6 +40,12 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.table)
         self.load_data()  # load the table contents from database
 
+        # create statusbar
+        self.statusbar = QStatusBar()
+        self.setStatusBar(self.statusbar)
+        # detect when cell is clicked
+        self.table.cellClicked.connect(self.clicked)
+
     def load_data(self):
         """load the database into window table"""
         connection = sqlite3.connect("database.db")
@@ -55,7 +61,7 @@ class MainWindow(QMainWindow):
 
     def insert_dialog(self):
         """open the dialog window for add student"""
-        dialog = InsertDialogue()
+        dialog = InsertDialog()
         dialog.exec()
 
     def search_dialog(self):
@@ -63,8 +69,31 @@ class MainWindow(QMainWindow):
         dialog = SearchDialog()
         dialog.exec()
 
+    def clicked(self):
+        editButton = QPushButton("Edit Record")
+        editButton.clicked.connect(self.edit_dialog)
+        deleteButton = QPushButton("Delete Record")
+        deleteButton.clicked.connect(self.delete_dialog)
 
-class InsertDialogue(QDialog):
+        # delete existing status bar buttons
+        existingButtons = self.findChildren(QPushButton)
+        if existingButtons:
+            for existingButton in existingButtons:
+                self.statusbar.removeWidget(existingButton)
+
+        self.statusbar.addWidget(editButton)
+        self.statusbar.addWidget(deleteButton)
+
+    def edit_dialog(self):
+        dialog = EditDialog()
+        dialog.exec()
+
+    def delete_dialog(self):
+        dialog = DeleteDialog()
+        dialog.exec()
+
+
+class InsertDialog(QDialog):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Insert Student Data")
@@ -132,6 +161,14 @@ class SearchDialog(QDialog):
 
         cursor.close()
         connection.close()
+
+
+class EditDialog(QDialog):
+    pass
+
+
+class DeleteDialog(QDialog):
+    pass
 
 
 # call code for running the program
