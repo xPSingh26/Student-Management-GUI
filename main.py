@@ -1,5 +1,5 @@
 from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidget, QTableWidgetItem, \
-    QDialog, QVBoxLayout, QLineEdit, QComboBox, QPushButton, QToolBar, QStatusBar
+    QDialog, QVBoxLayout, QLineEdit, QComboBox, QPushButton, QToolBar, QStatusBar, QGridLayout, QLabel, QMessageBox
 from  PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt
 import sys
@@ -192,29 +192,60 @@ class EditDialog(QDialog):
         self.mobileLineEdit.setPlaceholderText("Mobile")
         layout.addWidget(self.mobileLineEdit)
 
+        # grab the id of current row
+        self.id = appWindow.table.item(index, 0).text()
+
         updateButton = QPushButton("Update")
         updateButton.clicked.connect(self.update)
         layout.addWidget(updateButton)
 
         self.setLayout(layout)
 
-        def update(self):
-            """insert row into the database"""
-            pass
-            # name = self.nameLineEdit.text()
-            # course = self.courseBox.currentText()
-            # mobile = int(self.mobileLineEdit.text())
-            # connection = sqlite3.connect("database.db")
-            # cursor = connection.cursor()
-            # cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?, ?, ?)",
-            #                (name, course, mobile))
-            # connection.commit()
-            # connection.close()
-            # appWindow.load_data()
+    def update(self):
+        """update selected row into the database"""
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
+                       (self.nameLineEdit.text(),self.courseBox.currentText(), self.mobileLineEdit.text(), self.id))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        appWindow.load_data()
 
 
 class DeleteDialog(QDialog):
-    pass
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Delete Data")
+        layout = QGridLayout()
+
+        label = QLabel("Are you sure you want to delete this record?")
+        yesButton = QPushButton("Yes")
+        noButton = QPushButton("No")
+        yesButton.clicked.connect(self.delete)
+        noButton.clicked.connect(self.close)
+        layout.addWidget(label, 0, 0, 1, 2)
+        layout.addWidget(yesButton, 1, 0)
+        layout.addWidget(noButton, 1, 1)
+        self.setLayout(layout)
+
+        # grab the id of selected row
+        index = appWindow.table.currentRow()
+        self.id = appWindow.table.item(index, 0).text()
+
+    def delete(self):
+        connection = sqlite3.connect("database.db")
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM students WHERE id = ?", (self.id, ))
+        connection.commit()
+        cursor.close()
+        connection.close()
+        appWindow.load_data()
+        self.close()
+        confirmation = QMessageBox()
+        confirmation.setWindowTitle("Success!")
+        confirmation.setText("The record was deleted successfully!")
+        confirmation.exec()
 
 
 # call code for running the program
