@@ -21,6 +21,7 @@ class MainWindow(QMainWindow):
         fileMenuAction.triggered.connect(self.insert_dialog)
         fileMenu.addAction(fileMenuAction)
         helpMenuAction = QAction("About", self)
+        helpMenuAction.triggered.connect(self.about_dialog)
         helpMenu.addAction(helpMenuAction)
         editMenuAction = QAction(QIcon("icons/search.png"), "Search", self)
         editMenuAction.triggered.connect(self.search_dialog)
@@ -70,6 +71,10 @@ class MainWindow(QMainWindow):
     def search_dialog(self):
         """open the dialog window for search"""
         dialog = SearchDialog()
+        dialog.exec()
+
+    def about_dialog(self):
+        dialog = AboutDialog()
         dialog.exec()
 
     def clicked(self):
@@ -272,6 +277,14 @@ class DeleteDialog(QDialog):
         confirmation.setWindowTitle("Success!")
         confirmation.setText("The record was deleted successfully!")
         confirmation.exec()
+
+
+class AboutDialog(QMessageBox):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("About")
+        self.setText("A student management system GUI built using PyQt6 and MySql.")
+        self.exec()
 
 
 def connect(host="localhost", user="root", password=os.getenv("mysql_password"), database="school"):
