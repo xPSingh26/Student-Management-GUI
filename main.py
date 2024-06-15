@@ -172,7 +172,8 @@ class SearchDialog(QDialog):
         name = self.nameLineEdit.text()
         connection = connect()
         cursor = connection.cursor()
-        result = cursor.execute("SELECT * FROM students WHERE name = %s", (name,))
+        cursor.execute("SELECT * FROM students WHERE name = %s", (name,))
+        result = cursor.fetchall()
         rows = list(result)
         items = appWindow.table.findItems(name, Qt.MatchFlag.MatchFixedString)  # return the rows with the entered name
         for item in items:
