@@ -3,7 +3,8 @@ from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QTableWidget, QT
 from  PyQt6.QtGui import QAction, QIcon
 from PyQt6.QtCore import Qt
 import sys
-import sqlite3
+import mysql.connector
+import os
 
 
 class MainWindow(QMainWindow):
@@ -48,8 +49,10 @@ class MainWindow(QMainWindow):
 
     def load_data(self):
         """load the database into window table"""
-        connection = sqlite3.connect("database.db")
-        result = connection.execute("SELECT * FROM students")
+        connection = connect()
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM students")
+        result = cursor.fetchall()
         self.table.setRowCount(0)
 
         for rowNumber, rowData in enumerate(result):
@@ -125,7 +128,7 @@ class InsertDialog(QDialog):
             mobile = self.mobileLineEdit.text()
             connection = connect()
             cursor = connection.cursor()
-            cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?, ?, ?)",
+            cursor.execute("INSERT INTO students (name, course, mobile) VALUES (%s, %s, %s)",
                            (name, course, mobile))
             connection.commit()
             connection.close()
@@ -164,7 +167,7 @@ class SearchDialog(QDialog):
         name = self.nameLineEdit.text()
         connection = connect()
         cursor = connection.cursor()
-        result = cursor.execute("SELECT * FROM students WHERE name = ?", (name,))
+        result = cursor.execute("SELECT * FROM students WHERE name = %s", (name,))
         rows = list(result)
         items = appWindow.table.findItems(name, Qt.MatchFlag.MatchFixedString)  # return the rows with the entered name
         for item in items:
@@ -218,7 +221,7 @@ class EditDialog(QDialog):
         try:
             connection = connect()
             cursor = connection.cursor()
-            cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
+            cursor.execute("UPDATE students SET name = %s, course = %s, mobile = %s WHERE id = %s",
                            (self.nameLineEdit.text(), self.courseBox.currentText(), self.mobileLineEdit.text(), self.id))
             connection.commit()
             cursor.close()
@@ -259,7 +262,7 @@ class DeleteDialog(QDialog):
     def delete(self):
         connection = connect()
         cursor = connection.cursor()
-        cursor.execute("DELETE FROM students WHERE id = ?", (self.id, ))
+        cursor.execute("DELETE FROM students WHERE id = %s", (self.id, ))
         connection.commit()
         cursor.close()
         connection.close()
@@ -271,8 +274,8 @@ class DeleteDialog(QDialog):
         confirmation.exec()
 
 
-def connect(database_path="database.db"):
-    connection = sqlite3.connect(database_path)
+def connect(host="localhost", user="root", password=os.getenv("mysql_password"), database="school"):
+    connection = mysql.connector.connect(host=host, user=user, password=password, database=database)
     return connection
 
 
