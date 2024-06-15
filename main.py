@@ -119,21 +119,27 @@ class InsertDialog(QDialog):
 
     def insert(self):
         """insert row into the database"""
-        name = self.nameLineEdit.text()
-        course = self.courseBox.currentText()
-        mobile = int(self.mobileLineEdit.text())
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
-        cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?, ?, ?)",
-                       (name, course, mobile))
-        connection.commit()
-        connection.close()
-        appWindow.load_data()
-        self.close()
-        confirmation = QMessageBox()
-        confirmation.setWindowTitle("Success!")
-        confirmation.setText("The record was added successfully!")
-        confirmation.exec()
+        try:
+            name = self.nameLineEdit.text()
+            course = self.courseBox.currentText()
+            mobile = self.mobileLineEdit.text()
+            connection = connect()
+            cursor = connection.cursor()
+            cursor.execute("INSERT INTO students (name, course, mobile) VALUES (?, ?, ?)",
+                           (name, course, mobile))
+            connection.commit()
+            connection.close()
+            appWindow.load_data()
+            self.close()
+            confirmation = QMessageBox()
+            confirmation.setWindowTitle("Success!")
+            confirmation.setText("The record was added successfully!")
+            confirmation.exec()
+        except ValueError:
+            confirmation = QMessageBox()
+            confirmation.setWindowTitle("Failed!")
+            confirmation.setText("Please enter all details! ")
+            confirmation.exec()
 
 
 class SearchDialog(QDialog):
@@ -156,11 +162,11 @@ class SearchDialog(QDialog):
     def search(self):
         """search for name in current database and highlight the rows returned"""
         name = self.nameLineEdit.text()
-        connection = sqlite3.connect("database.db")
+        connection = connect()
         cursor = connection.cursor()
         result = cursor.execute("SELECT * FROM students WHERE name = ?", (name,))
         rows = list(result)
-        items = appWindow.table.findItems(name, Qt.MatchFlag.MatchFixedString) # return the rows with the entered name
+        items = appWindow.table.findItems(name, Qt.MatchFlag.MatchFixedString)  # return the rows with the entered name
         for item in items:
             appWindow.table.item(item.row(), 1).setSelected(True) # highlight all the rows with matched name
 
@@ -209,19 +215,25 @@ class EditDialog(QDialog):
 
     def update(self):
         """update selected row into the database"""
-        connection = sqlite3.connect("database.db")
-        cursor = connection.cursor()
-        cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
-                       (self.nameLineEdit.text(),self.courseBox.currentText(), self.mobileLineEdit.text(), self.id))
-        connection.commit()
-        cursor.close()
-        connection.close()
-        appWindow.load_data()
-        self.close()
-        confirmation = QMessageBox()
-        confirmation.setWindowTitle("Success!")
-        confirmation.setText("The record was edited successfully!")
-        confirmation.exec()
+        try:
+            connection = connect()
+            cursor = connection.cursor()
+            cursor.execute("UPDATE students SET name = ?, course = ?, mobile = ? WHERE id = ?",
+                           (self.nameLineEdit.text(), self.courseBox.currentText(), self.mobileLineEdit.text(), self.id))
+            connection.commit()
+            cursor.close()
+            connection.close()
+            appWindow.load_data()
+            self.close()
+            confirmation = QMessageBox()
+            confirmation.setWindowTitle("Success!")
+            confirmation.setText("The record was edited successfully!")
+            confirmation.exec()
+        except ValueError:
+            confirmation = QMessageBox()
+            confirmation.setWindowTitle("Failed!")
+            confirmation.setText("Please enter all details! ")
+            confirmation.exec()
 
 
 class DeleteDialog(QDialog):
@@ -245,7 +257,7 @@ class DeleteDialog(QDialog):
         self.id = appWindow.table.item(index, 0).text()
 
     def delete(self):
-        connection = sqlite3.connect("database.db")
+        connection = connect()
         cursor = connection.cursor()
         cursor.execute("DELETE FROM students WHERE id = ?", (self.id, ))
         connection.commit()
@@ -257,6 +269,11 @@ class DeleteDialog(QDialog):
         confirmation.setWindowTitle("Success!")
         confirmation.setText("The record was deleted successfully!")
         confirmation.exec()
+
+
+def connect(database_path="database.db"):
+    connection = sqlite3.connect(database_path)
+    return connection
 
 
 # call code for running the program
